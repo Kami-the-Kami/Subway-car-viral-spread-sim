@@ -34,16 +34,16 @@ class Station:
         passIndex = minIndex
         passengers = list()
         for i in range(self.passengersPerMin):
-            indexEnetred = self.index
-            indexToExit = self.random.randrange(indexEnetred+1, self.MAX_STATION_INDEX + 1)
-            stationsUntillExit = indexToExit - indexEnetred
+            indexEntered = self.index
+            indexToExit = self.random.randrange(indexEntered+1, self.MAX_STATION_INDEX + 1)
+            stationsUntilExit = indexToExit - indexEntered
 
             #TODO: proper random function if passenger is infected
             isInfected = False
             rand = self.random.randrange(0,101)
             if rand <= 10:
                 isInfected = True
-            passengers.append(Passenger(passIndex, stationsUntillExit, isInfected))
+            passengers.append(Passenger(passIndex, stationsUntilExit, isInfected))
             passIndex += 1
 
         self.QueuePassengers(passengers)
@@ -84,22 +84,16 @@ class Car:
     def __GetBestSafeZone(self):
         bestIndex = -1
         for i in range(0, len(self.spaces)):
-            space = self.__GetSpaceInSafeZone(self.spaces[i])
+            space = self.spaces[i].count(None)
             if space > 0 and bestIndex == -1:
                 bestIndex = i
-            if space > self.__GetSpaceInSafeZone(self.spaces[bestIndex]):
+            if space > self.spaces[bestIndex].count(None):
                 bestIndex = i
-        if bestIndex < 0:
-            return -1
         return bestIndex
 
     #returns # of empty spots in safe zone
     def __GetSpaceInSafeZone(self, arr):
-        spaceInZone = 0
-        for i in arr:
-            if i is None:
-                spaceInZone += 1
-        return spaceInZone
+        return arr.count(None)
 
     #return time to next station
     def GetMinsToNextStation(self):
@@ -125,7 +119,7 @@ class Car:
             for j in range(0, len(self.spaces[i])):
                 if self.spaces[i][j] is not None:
                     self.spaces[i][j].DecrementStops()
-                    if self.spaces[i][j].stopsUntillDisembark == 0 :
+                    if self.spaces[i][j].GetStopsUntilDisembark() == 0:
                         passengersDeparting.append(self.spaces[i][j])
                         self.spaces[i][j] = None
         return passengersDeparting
@@ -168,6 +162,9 @@ class Passenger():
     def GetIsInfected(self):
         return self.infected
 
+    def GetStopsUntilDisembark(self):
+        return self.stopsUntillDisembark
+
     def GetRideTime(self):
         return self.rideTime
 
@@ -191,7 +188,7 @@ def Simulation():
     
 
     #how many minutes to run the simulation for
-    while clock < 24*60:
+    while clock < 100:
         # Launch new train todo: change it so it doesnt happen every minute
         trainsEnroute.append(Car(subwayLine[0], carMaxCapacity, carSafeCapacity))
 
@@ -237,7 +234,10 @@ def Simulation():
         infected = "not infected"
         if passenger.GetIsInfected():
             infected = "infected"
-        print("Passenger {} rode for {} mins, was exposed for {} mins, started off {}".format(passenger.index,passenger.GetRideTime(), passenger.exposureTime, infected))
+        print("Passenger {} rode for {} mins, was exposed for {} mins, started off {}".format(passenger.index,
+                                                                                              passenger.GetRideTime(),
+                                                                                              passenger.exposureTime,
+                                                                                              infected))
 
 
 
