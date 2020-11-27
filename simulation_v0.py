@@ -69,6 +69,17 @@ class Car:
             output += str(i) + '\n'
         return output
 
+    def __repr__(self):
+        output = ""
+        for i in self.spaces:
+            for j in i:
+                if j is not None:
+                    output+= "[{}],".format(j.index)
+                else:
+                    output+= "[],"
+            output = output[:-1] + "\n"
+        return output
+
     #Add 1 passenger to a safe zone, returns false if train car is at max capacity
     def AddPassenger(self, passenger):
         bestSafeZone = self.__GetBestSafeZone()
@@ -185,12 +196,13 @@ def Simulation():
     subwayLine = GetSubwayLine()
     trainsEnroute = list()
 
-    carMaxCapacity = 258
-    carSafeCapacity = 20
+    carMaxCapacity = 20#258
+    carSafeCapacity = 4#20
     
 
     #how many minutes to run the simulation for
-    while clock < 10:
+    while clock < 100:
+        print("Clock time: {}".format(clock))
         # Launch new train todo: change it so it doesnt happen every minute
         trainsEnroute.append(Car(subwayLine[0], carMaxCapacity, carSafeCapacity))
 
@@ -199,13 +211,12 @@ def Simulation():
             passengerIndex += subwayLine[stationIndex].GeneratePassengers(passengerIndex)
 
         for train in trainsEnroute:
-
+            #print("Train at station index {} \n {}".format(train.station.index, repr(train)))
             # Tick trains (updates new values for passengers)
             train.Tick()
 
             #if train has arrived at next station
             if train.GetMinsToNextStation() == 0:
-                train.station = subwayLine[train.GetStationIndex()]
 
                 #Get passengers off trains who arrived at their stop, add to list for later
                 departingPassengers = train.ArriveAtStation()
@@ -214,25 +225,20 @@ def Simulation():
 
                 #get passengers waiting to board train at station
                 passengersToLoad = subwayLine[train.GetStationIndex()].LoadPassengers()
-                print("loading passengers: ")
-                print(passengersToLoad)
-                for p in passengersToLoad:
-                    print(p)
+
+                for p in reversed(passengersToLoad):
                     if train.AddPassenger(p): #if passenger was succesfully added
-                        #print("removing passenger" + str(p))
                         passengersToLoad.remove(p)
-                    ##else: #train is full, exit loop
-                        ##break
                 #if train filled before station emptied, add passengers back into station queue
-                print("finished loading passengers, remaining are: ")
-                print(passengersToLoad)
 
                 if len(passengersToLoad) > 0:
                     subwayLine[train.GetStationIndex()].QueuePassengers(passengersToLoad)
 
                 #If we're at the final stop, remove the train
-                if train.GetStationIndex() == len(subwayLine):
+                if train.GetStationIndex() == len(subwayLine) - 1:
                     trainsEnroute.remove(train)
+                else:
+                    train.station = subwayLine[train.GetStationIndex() + 1]
             #Train is in transit.
             else:
                 train.DecrementMinsToNextStation()
