@@ -1,12 +1,17 @@
 class Station:
     import random
 
-    def __init__(self, index, stationName, passengersPerMin, timeToNextStation, startingPassengerQueue=list()):
+    def __init__(self, index, stationName, passengersPerMin, timeToNextStation, startingPassengerQueue=None):
         self.index = index
         self.passengersPerMin = passengersPerMin
         self.stationName = stationName
         self.timeToNextStation = timeToNextStation
-        self.passengerQueue = startingPassengerQueue
+        #self.passengerQueue = startingPassengerQueue
+
+        if startingPassengerQueue is None:
+            self.passengerQueue = []
+        else:
+            self.passengerQueue = startingPassengerQueue
 
         self.MAX_STATION_INDEX = 23
 
@@ -67,6 +72,7 @@ class Car:
     #Add 1 passenger to a safe zone, returns false if train car is at max capacity
     def AddPassenger(self, passenger):
         bestSafeZone = self.__GetBestSafeZone()
+        #print("best safe zone is {}".format(bestSafeZone))
         if bestSafeZone == -1:
             return False
         else:
@@ -90,10 +96,6 @@ class Car:
             if space > self.spaces[bestIndex].count(None):
                 bestIndex = i
         return bestIndex
-
-    #returns # of empty spots in safe zone
-    def __GetSpaceInSafeZone(self, arr):
-        return arr.count(None)
 
     #return time to next station
     def GetMinsToNextStation(self):
@@ -139,8 +141,8 @@ class Car:
                     self.spaces[i][j].IncrementRideTime()
 
 class Passenger():
-    def __init__(self,index, stopsUntillDisembark, infected):
-        self.stopsUntillDisembark = stopsUntillDisembark
+    def __init__(self, index, stopsUntilDisembark, infected):
+        self.stopsUntilDisembark = stopsUntilDisembark
         self.infected = infected
         self.rideTime = 0
         self.exposureTime = 0
@@ -149,12 +151,12 @@ class Passenger():
 
     def __str__(self):
         return "index: {}, stops to go: {}, Infected: {}, ride time: {}, exposure time: {}".format(self.index,
-                                                                                        self.stopsUntillDisembark,
-                                                                                        self.infected, self.rideTime,
-                                                                                        self.exposureTime)
+                                                                                                   self.stopsUntilDisembark,
+                                                                                                   self.infected, self.rideTime,
+                                                                                                   self.exposureTime)
 
     def DecrementStops(self):
-        self.stopsUntillDisembark -= 1
+        self.stopsUntilDisembark -= 1
 
     def GetExposureTime(self):
         return self.exposureTime
@@ -163,7 +165,7 @@ class Passenger():
         return self.infected
 
     def GetStopsUntilDisembark(self):
-        return self.stopsUntillDisembark
+        return self.stopsUntilDisembark
 
     def GetRideTime(self):
         return self.rideTime
@@ -188,7 +190,7 @@ def Simulation():
     
 
     #how many minutes to run the simulation for
-    while clock < 100:
+    while clock < 10:
         # Launch new train todo: change it so it doesnt happen every minute
         trainsEnroute.append(Car(subwayLine[0], carMaxCapacity, carSafeCapacity))
 
@@ -212,12 +214,19 @@ def Simulation():
 
                 #get passengers waiting to board train at station
                 passengersToLoad = subwayLine[train.GetStationIndex()].LoadPassengers()
+                print("loading passengers: ")
+                print(passengersToLoad)
                 for p in passengersToLoad:
+                    print(p)
                     if train.AddPassenger(p): #if passenger was succesfully added
+                        #print("removing passenger" + str(p))
                         passengersToLoad.remove(p)
-                    else: #train is full, exit loop
-                        break
+                    ##else: #train is full, exit loop
+                        ##break
                 #if train filled before station emptied, add passengers back into station queue
+                print("finished loading passengers, remaining are: ")
+                print(passengersToLoad)
+
                 if len(passengersToLoad) > 0:
                     subwayLine[train.GetStationIndex()].QueuePassengers(passengersToLoad)
 
@@ -238,7 +247,6 @@ def Simulation():
                                                                                               passenger.GetRideTime(),
                                                                                               passenger.exposureTime,
                                                                                               infected))
-
 
 
 def GetSubwayLine():
@@ -270,9 +278,17 @@ def GetSubwayLine():
            ]
     stationList = list()
     index = 0
+  #  for s in data:
+  #      stationList.append(Station(index,s[0],s[1],s[2]))
+  #      index += 1
     for s in data:
-        stationList.append(Station(index,s[0],s[1],s[2]))
+        stationList.append(Station(index, s[0], s[1], s[2]))
         index += 1
+    return stationList
+
+
+
+
     return stationList
 
 
