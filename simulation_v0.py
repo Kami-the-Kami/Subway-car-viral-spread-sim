@@ -201,7 +201,7 @@ def Simulation():
     
 
     #how many minutes to run the simulation for
-    while clock < 100:
+    while clock < 24*60:
         print("Clock time: {}".format(clock))
         # Launch new train todo: change it so it doesnt happen every minute
         trainsEnroute.append(Car(subwayLine[0], carMaxCapacity, carSafeCapacity))
@@ -211,7 +211,6 @@ def Simulation():
             passengerIndex += subwayLine[stationIndex].GeneratePassengers(passengerIndex)
 
         for train in trainsEnroute:
-            #print("Train at station index {} \n {}".format(train.station.index, repr(train)))
             # Tick trains (updates new values for passengers)
             train.Tick()
 
@@ -284,9 +283,6 @@ def GetSubwayLine():
            ]
     stationList = list()
     index = 0
-  #  for s in data:
-  #      stationList.append(Station(index,s[0],s[1],s[2]))
-  #      index += 1
     for s in data:
         stationList.append(Station(index, s[0], s[1], s[2]))
         index += 1
